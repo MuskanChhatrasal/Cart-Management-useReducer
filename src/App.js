@@ -107,7 +107,12 @@ export default function App() {
           <div key={it}>
             <h3>{it}</h3>
             <button>Remove</button>
-            <button style={{ marginLeft: "0.5rem" }}>Move to wishlist</button>
+            <button
+              style={{ marginLeft: "0.5rem" }}
+              onClick={() => dispatch({ type: "ADD_TO_WISHLIST", payload: it })}
+            >
+              Move to wishlist
+            </button>
             <hr />
           </div>
         );
