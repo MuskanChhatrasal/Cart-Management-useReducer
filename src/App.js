@@ -6,124 +6,164 @@ const itemsInCart = [
     id: 1,
     name: "kala chasma",
     price: 1000,
-    count: 0
+    quantity: 1,
+    wishCount: 1
   },
   {
     id: 2,
     name: "laal chhadi",
     price: 500,
-    count: 0
+    quantity: 1,
+    wishCount: 1
   },
   {
     id: 3,
     name: "jalebi",
     price: 50,
-    count: 0
+    quantity: 1,
+    wishCount: 1
   },
   {
     id: 4,
     name: "japani joota",
     price: 10000,
-    count: 0
+    quantity: 1,
+    wishCount: 1
   }
 ];
-// const filterItems = (items, id) => items.filter((it)=>{
-//   return it.id === id
-// })
+
+const filterItrems = (itemsInCart, itemId) =>
+  itemsInCart.filter((it) => it.id === itemId);
+
+const addToCART = (state, item) => {
+  let updatedCart;
+  if (filterItrems(state.cartItems, item.id).length > 0) {
+    updatedCart = state.cartItems.map((it) => {
+      if (it.id === item.id) {
+        return { ...it, quantity: it.quantity + 1 };
+      } else {
+        return it;
+      }
+    });
+  } else {
+    let items = filterItrems(itemsInCart, item.id)[0];
+    updatedCart = [...state.cartItems, items];
+  }
+  // console.log(updatedCart);
+  return { ...state, cartItems: updatedCart };
+};
+
+const addToWishlist = (state, item) => {
+  let updatedCart;
+  if (filterItrems(state.wishlist, item.id).length > 0) {
+    updatedCart = state.wishlist.map((it) => {
+      if (it.id === item.id) {
+        return { ...it, wishCount: it.wishCount + 1 };
+      } else {
+        return it;
+      }
+    });
+  } else {
+    let items = filterItrems(itemsInCart, item.id)[0];
+    updatedCart = [...state.wishlist, items];
+  }
+  return { ...state, wishlist: updatedCart };
+};
 
 const reducer = (state, action) => {
-  // const updateList = () =>{
-  //   let updatedList;
-  //       if(filterItems(state.cartItems, action.payload.id).length>0){
-  //         updatedList = state.cartItems.map((it)=>{
-  //           if(it.id === action.payload.id){
-  //             return {...it, count: state.it.count + 1}
-  //           }
-  //           else{
-  //             return it;
-  //           }
-  //         })
-  //       }
-  //       let item = filterItems(state.itemsInCart, action.payload.id)[0];
-  //       updatedList = [...state.cartItems, item]
-  //     }
-  // }
   switch (action.type) {
     case "ADD_TO_CART":
+      return addToCART(state, action.payload);
+
+    case "MOVE_TO_WISHLIST":
+      return addToWishlist(state, action.payload);
+
+    case "REMOVE_FROM_CART":
       return {
         ...state,
-        cartItems: [...state.cartItems, action.payload.name]
-        // items: (state.items = state.items + 1),
-        // totalPrice: (state.totalPrice = state.totalPrice + action.payload.price)
+        cartItems: state.cartItems.filter((it) => it.id !== action.payload.id)
       };
-    case "ADD_TO_WISHLIST":
-      return { ...state, wishlist: [...state.wishlist, action.payload.name] };
-    // case "REMOVE":
-    //   return {
-    //     ...state
-    //     // cartItems: state.cartItems.filter((it) => it.id !== action.payload.id),
-    //     // wishlist: state.wishlist.filter((it) => it.id !== action.payload.id)
-    //   };
+
+    case "REMOVE_FROM_WISHLIST":
+      return {
+        ...state,
+        wishlist: state.wishlist.filter((it) => it.id !== action.payload.id)
+      };
     default:
   }
 };
-
 export default function App() {
   const [state, dispatch] = useReducer(reducer, {
-    items: 0,
-    totalPrice: 0,
     cartItems: [],
     wishlist: []
   });
   return (
-    <div className="App">
+    <div>
       <h1>Cart Management</h1>
-      <h2>Items: {state.items}</h2>
-      <h2>Total Price: {state.totalPrice}</h2>
-      {itemsInCart.map((item) => {
+      <h1>My Products</h1>
+      {itemsInCart.map((it) => {
         return (
-          <div key={item.id}>
-            <h3>{item.name}</h3>
+          <div key={it.id}>
+            <h2>
+              {it.name} || {it.price}
+            </h2>
             <button
-              onClick={() => dispatch({ type: "ADD_TO_CART", payload: item })}
+              onClick={() => dispatch({ type: "ADD_TO_CART", payload: it })}
             >
               Add to Cart
             </button>
             <button
               style={{ marginLeft: "0.5rem" }}
               onClick={() =>
-                dispatch({ type: "ADD_TO_WISHLIST", payload: item })
+                dispatch({ type: "MOVE_TO_WISHLIST", payload: it })
               }
             >
-              Move to wishlist
+              Move to Wishlist
             </button>
             <hr />
           </div>
         );
       })}
-      {state.cartItems.length > 0 && <h1>My Cart</h1>}
+
+      <h1>My Cart</h1>
       {state.cartItems.map((it) => {
         return (
-          <div key={it}>
-            <h3>{it}</h3>
-            <button>Remove</button>
+          <div key={it.id}>
+            <h2>{it.name}</h2>
+            <h2>Quantity: {it.quantity}</h2>
+            <button
+              onClick={() =>
+                dispatch({ type: "MOVE_TO_WISHLIST", payload: it })
+              }
+            >
+              Move to Wishlist
+            </button>
             <button
               style={{ marginLeft: "0.5rem" }}
-              onClick={() => dispatch({ type: "ADD_TO_WISHLIST", payload: it })}
+              onClick={() =>
+                dispatch({ type: "REMOVE_FROM_CART", payload: it })
+              }
             >
-              Move to wishlist
+              Remove
             </button>
-            <hr />
           </div>
         );
       })}
-      {state.wishlist.length > 0 && <h1>My Wishlist</h1>}
+      <hr />
+
+      <h1>My Wishlist</h1>
       {state.wishlist.map((it) => {
         return (
-          <div key={it}>
-            <h2>{it}</h2>
-            <button>Remove</button>
-            <hr />
+          <div key={it.id}>
+            <h2>{it.name}</h2>
+            <h2>Quantity: {it.wishCount}</h2>
+            <button
+              onClick={() =>
+                dispatch({ type: "REMOVE_FROM_WISHLIST", payload: it })
+              }
+            >
+              Remove
+            </button>
           </div>
         );
       })}
